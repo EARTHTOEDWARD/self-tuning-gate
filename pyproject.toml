@@ -1,0 +1,30 @@
+[project]
+name = "self-tuning-gate"
+version = "0.1.0"
+description = "Lyapunov/TE-aware self-tuning gate for MAES/SACP/ABTC projects."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.9"
+authors = [{name = "Self Tuning Team"}]
+dependencies = [
+    "numpy>=1.23",
+    "pyyaml>=6.0"
+]
+optional-dependencies = { signal = ["scipy>=1.10"] }
+
+[project.scripts]
+self-tuner-run = "maes_shockgate.cli:main"
+
+[project.entry-points."maes.contracts"]
+reservoir_esn = "maes_shockgate.contracts.esn:ESNContract"
+reservoir_srnn = "maes_shockgate.contracts.srnn:SRNNContract"
+
+[project.entry-points."maes.gates"]
+phase_energy_blend = "maes_shockgate.gates.phase_energy:PhaseEnergyGate"
+lyap_te_autotune = "maes_shockgate.gates.autotune_gate:AutoTuneGate"
+
+[project.entry-points."maes.policies"]
+shockgate = "maes_shockgate.policies.shockgate:ShockGatePolicy"
+
+[tool.setuptools.packages.find]
+include = ["maes_shockgate*"]

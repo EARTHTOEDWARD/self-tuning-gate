@@ -1,0 +1,40 @@
+mode: self_driving
+seed: 0
+steps: 2000
+contract:
+  type: reservoir_esn
+  H: 256
+  spectral_radius: 0.9
+  leak: 0.2
+  input_scale: 0.6
+  adapters: [normalize:rms, stride:2]
+gate:
+  type: phase_energy_blend
+  alpha: 0.7
+  beta: 0.2
+policy:
+  type: shockgate
+  tau: 0.3
+self_tuning:
+  enabled: true
+  W: 256
+  S: 15
+  eta: 0.05
+  alpha_obj: 1.0
+  beta_obj: 1.0
+  w_phase: 0.5
+  gamma_smooth: 0.2
+  lam_band: [0.0, 0.15]
+  shock_budget: 0.10
+  shock_high: 0.6
+controllers:
+  lr_outband_scale: 0.25
+  attn_temp_k: 0.5
+  explore_k: 0.15
+  leak_k: 0.8
+  rho_k: 0.6
+  dropout_k: 0.2
+  horizon_k: 0.5
+telemetry:
+  fmt: jsonl
+  path: logs/self_tuning_sd.jsonl
