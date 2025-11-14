@@ -41,6 +41,7 @@ class SelfTuningCore:
     rho_k: float = 0.6
     dropout_k: float = 0.2
     horizon_k: float = 0.4
+    lambda_soc: float = 0.0
 
     _gamma: float = 0.5
     _last_gamma: float = 0.5
@@ -51,7 +52,8 @@ class SelfTuningCore:
     ctx_cache: dict = field(default_factory=dict)
 
     def step(self, mae: float, lam1: float, te: Optional[float], gamma_phase: float,
-             ctx_key: str, te_mode: str = "explore", valence: Optional[float] = None):
+             ctx_key: str, te_mode: str = "explore", valence: Optional[float] = None,
+             soc_loss: Optional[float] = None):
         if math.isfinite(te):
             self._te_buf.append(float(te))
         q95 = self._quantile()
@@ -75,8 +77,17 @@ class SelfTuningCore:
                 te_term = (+1.0 if te_mode == "explore" else -1.0) * (te if math.isfinite(te) else 0.0)
                 stab = stability_margin(g, lam1)
                 chg = (g - self._gamma) ** 2
-                return (mae_pred(g) + self.alpha_obj * te_term - self.beta_obj * stab
-                        + self.mu_smooth * chg + self._budget_penalty())
+                soc_term = 0.0
+                if self.lambda_soc > 0.0 and soc_loss is not None and math.isfinite(soc_loss):
+                    soc_term = self.lambda_soc * max(0.0, soc_loss) * g
+                return (
+                    mae_pred(g)
+                    + self.alpha_obj * te_term
+                    - self.beta_obj * stab
+                    + self.mu_smooth * chg
+                    + self._budget_penalty()
+                    + soc_term
+                )
 
             best_g, bestJ = self._gamma, float("inf")
             for g in np.linspace(0.0, 1.0, self.S):
@@ -103,6 +114,7 @@ class SelfTuningCore:
         logs = {
             "TE_q95": q95 if math.isfinite(q95) else float("nan"),
             "budget_used": self._shock_used / max(1, self._steps),
+            "soc_loss": float(soc_loss) if soc_loss is not None else float("nan"),
         }
         return float(self._gamma), knobs, logs
 

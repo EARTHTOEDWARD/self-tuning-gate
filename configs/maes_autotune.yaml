@@ -14,6 +14,19 @@ gate:
 policy:
   type: shockgate
   tau: 0.15
+eoc:
+  enabled: true
+  period: 5
+  target_low: 0.0
+  target_high: 0.2
+  lambda_ema: 0.95
+  sigma_ema: 0.9
+  sigma_a: 3.0
+  sigma_b: 0.5
+  apply_to: ["u", "input"]
+  perception: temporal_unsharp
+  lr_gate: false
+  lr_outband_scale: 0.3
 self_tuning:
   enabled: true
   W: 384

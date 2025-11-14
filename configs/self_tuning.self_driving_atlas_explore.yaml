@@ -53,9 +53,10 @@ self_tuning:
     atlas:
       enabled: true
       max_slots: 6
-      dock_thresh: 2.0
+      dock_thresh: 6.0
       pull_k: 0.25
       ttl: 8000
+      allow_explore: true
     autocatalysis:
       enabled: true
       tau_decay: 0.9
@@ -93,4 +94,4 @@ controllers:
   horizon_k: 0.5
 telemetry:
   fmt: jsonl
-  path: logs/self_tuning_sd.jsonl
+  path: logs/self_tuning_sd_atlas_explore.jsonl

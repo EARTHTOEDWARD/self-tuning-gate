@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 import numpy as np
 
+from ..eoc import esn_tangent_jvp_factory
+
 def _spectral_scale(W, target):
     v = np.random.randn(W.shape[0])
     for _ in range(25):
@@ -59,6 +61,13 @@ class ESNContract:
     def jvp(self, v):
         d = 1.0 - np.tanh(self._last_preact) ** 2
         return (1 - self.leak) * v + self.leak * (d * (self.W @ v))
+
+    def tangent_jvp(self, x: np.ndarray, u: np.ndarray, v: np.ndarray) -> np.ndarray:
+        """
+        Compute (J_x f) @ v at state x with input u for the leaky tanh ESN.
+        """
+        jvp = esn_tangent_jvp_factory(self, x, u)
+        return jvp(v)
 
     def set_spectral_radius(self, target: float):
         target = float(max(0.0, target))
